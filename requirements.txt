@@ -1,0 +1,7 @@
+colorama
+requests
+fake-useragent
+brotli
+chardet
+urllib3
+eth-account

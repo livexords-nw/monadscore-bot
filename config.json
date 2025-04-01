@@ -1,0 +1,8 @@
+{
+    "task": true,
+    "run_account_reff": false,
+    "thread": 1,
+    "proxy": false,
+    "delay_account_switch": 10,
+    "delay_loop": 43200
+}
