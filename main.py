@@ -285,7 +285,7 @@ class monadscore:
         for task_id in tasks:
             self.log(f"🚀 Claiming task: {task_id}...", Fore.CYAN)
 
-            payload = json.dumps({"wallet": self.token, "taskId": task_id})
+            payload = json.dumps({"wallet": self.wallet, "taskId": task_id})
 
             claim_url = f"{self.BASE_URL}user/claim-task"
             headers = {**self.HEADERS, "authorization": f"Bearer {self.token}"}
