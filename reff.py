@@ -218,7 +218,7 @@ class monadscore:
                 self.log("📡 Sending user registration request...", Fore.CYAN)
                 response = requests.post(user_url, headers=headers, data=payload)
 
-                if response.status_code == 201:
+                if response.status_code == 201 or response.status_code == 200:
                     success_count += 1
                     self.log(
                         f"✅ Registration successful! ({success_count}/{count})",

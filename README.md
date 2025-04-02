@@ -20,11 +20,11 @@
 
 ---
 
-## 🌟 Version v1.0.0
+## 🌟 Version v1.0.1
 
 ### What's New
 
-- All features added: **Auto Solve Task**, **Auto Run Node**, **Auto Reff**, **Support Proxy**, **Support Multi Account**, **Support Thread**, and **Delay Loop & Account Switching**. 🎉
+- Adjusted all API endpoints to align with the updated monadscore API
 
 ---
 

@@ -38,7 +38,7 @@ class monadscore:
         self.config = self.load_config()
         self.query_list = self.load_query("query.txt")
         self.token = None
-        self.uid = None
+        self.wallet = None
         self.session = self.sessions()
         self._original_requests = {
             "get": requests.get,
@@ -214,33 +214,58 @@ class monadscore:
 
         # Log informasi login ke wallet dan info running node
         self.log(f"🔑 Login to wallet: {token}", Fore.CYAN)
-        self.log("🚀 Running node...", Fore.CYAN)
 
-        # Persiapkan payload dengan waktu perangkat user (dalam milidetik)
-        import time
+        # === API BARU: Register User dengan Invite ===
         import json
         import requests
 
-        current_time_ms = int(time.time() * 1000)
-        payload = json.dumps({"wallet": token, "startTime": current_time_ms})
-
-        update_url = f"{self.BASE_URL}user/update-start-time"
-        headers = self.HEADERS  # Menggunakan headers yang sudah didefinisikan
+        payload_new = json.dumps({
+            "wallet": token,
+            "invite": "JioRgBeR"
+        })
+        user_url = f"{self.BASE_URL}user"        
 
         try:
-            response = requests.put(update_url, headers=headers, data=payload)
-
-            # Cek status code response
-            if response.status_code == 200:
-                self.log(
-                    "✅ Wallet login and update-start-time successful!", Fore.GREEN
-                )
-                self.token = token
+            self.log("📡 Sending user registration request...", Fore.CYAN)
+            response_new = requests.post(user_url, headers=self.HEADERS, data=payload_new)
+            if response_new.status_code == 200:
+                data_new = self.decode_response(response_new)
+                if data_new.get("success") is True:
+                    self.token = data_new.get("token")
+                    self.wallet = token
+                    self.log("✅ Wallet registration successful!", Fore.GREEN)
+                else:
+                    self.log("❌ Registration failed: Unsuccessful response", Fore.RED)
+                    return
             else:
-                self.log(
-                    f"❌ Failed to update start time. Status code: {response.status_code}",
-                    Fore.RED,
-                )
+                self.log(f"❌ Failed to register user. Status code: {response_new.status_code}", Fore.RED)
+                return
+        except requests.exceptions.RequestException as e:
+            self.log(f"❌ Request error during user registration: {e}", Fore.RED)
+            return
+        except Exception as e:
+            self.log(f"❌ Unexpected error during user registration: {e}", Fore.RED)
+            return
+
+        # Info running node (sebagai informasi, bukan eksekusi perintah node)
+        self.log("🚀 Running node...", Fore.CYAN)
+        headers = {**self.HEADERS, "authorization": f"Bearer {self.token}"}
+
+        # === API LAMA: Update Start Time ===
+        import time
+        current_time_ms = int(time.time() * 1000)
+        payload_old = json.dumps({
+            "wallet": self.wallet,
+            "startTime": current_time_ms
+        })
+
+        update_url = f"{self.BASE_URL}user/update-start-time"
+        try:
+            response_old = requests.put(update_url, headers=headers, data=payload_old)
+            if response_old.status_code == 200:
+                self.log("✅ Wallet login and update-start-time successful!", Fore.GREEN)
+            else:
+                self.log(f"❌ Failed to update start time. Status code: {response_old.status_code}", Fore.RED)
                 return
         except requests.exceptions.RequestException as e:
             self.log(f"❌ Failed to send update-start-time request: {e}", Fore.RED)
@@ -248,6 +273,7 @@ class monadscore:
         except Exception as e:
             self.log(f"❌ Unexpected error: {e}", Fore.RED)
             return
+
 
     def task(self) -> None:
         import json
@@ -262,7 +288,7 @@ class monadscore:
             payload = json.dumps({"wallet": self.token, "taskId": task_id})
 
             claim_url = f"{self.BASE_URL}user/claim-task"
-            headers = self.HEADERS  # Menggunakan headers yang sudah didefinisikan
+            headers = {**self.HEADERS, "authorization": f"Bearer {self.token}"}
 
             try:
                 response = requests.post(claim_url, headers=headers, data=payload)
